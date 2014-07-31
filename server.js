@@ -47,6 +47,7 @@ function compute_points_to_next_level(level){
 
 
 var app = express()
+app.use(express.static(__dirname + '/frontend/dist/'))
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -187,24 +188,6 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
       })
     }
   });
-
-
-  app.get('/html/*',function(req,res){
-    pth = req.url.slice(6)
-    console.log(pth)
-    res.sendfile(__dirname + '/frontend/dist/' + pth);
-  })
-
-  // app.get('/rank',function(req,res){
-  //   res.sendfile(__dirname + '/frontend/app/pages/rank.html');
-  // })
-
-  // app.get('/user',function(req,res){
-  //   res.sendfile(__dirname + '/frontend/app/pages/user.html');
-  // })
-
-  // app.get('/', express.static(__dirname + '/frontend/index.html'));
-
 
   // START THE SERVER
   // =============================================================================
