@@ -4,6 +4,14 @@ table {
   width: 100%;
 }
 
+medium {
+	font-size: 15px;
+}
+
+medium {
+	font-size: 30px;
+}
+
 th i {
   color:#333;
 }
