@@ -147,10 +147,19 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
     }
   });
 
+  app.get('/',function(req,res){
+    res.sendfile(__dirname + '/frontend/app/index.html');
+  })
 
-  app.use('/api', router);
+  app.get('/rank',function(req,res){
+    res.sendfile(__dirname + '/frontend/app/pages/rank.html');
+  })
 
+  app.get('/user',function(req,res){
+    res.sendfile(__dirname + '/frontend/app/pages/user.html');
+  })
 
+  // app.get('/', express.static(__dirname + '/frontend/index.html'));
 
 
   // START THE SERVER
