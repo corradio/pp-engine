@@ -1,55 +1,36 @@
 # Controllers
 
 angular.module('ppApp.controllers.rank', [])
-    .controller('RankCtrl', ['$scope', 'Pagination', '$modal', ($scope, Pagination, $modal) ->
-        $scope.players = [
-            {
-                name: 'Joseph Dureau1'
-                company: 'Snips'
-                score: 1201
-                level: 1
-            }
-            {
-                name: 'Pierre Merienne'
-                company: 'Snips'
-                score: 1400
-                level: 2
-            }
-            {
-                name: 'Tristan Deleu'
-                company: 'Snips'
-                score: 1800
-                level: 3
-            }
-        ]
-        $scope.results = []
-        $scope.search = {}
-        $scope.pagination = Pagination.getNew(4)
-        $scope.updateFilter = () ->
-            $scope.pagination.numPages = Math.ceil($scope.players.length/$scope.pagination.perPage)
-            $scope.pagination.toPageId(0)
-        $scope.updateFilter()
+    .controller('RankCtrl', ['$scope', 'Pagination', '$modal', '$http', ($scope, Pagination, $modal, $http) ->
+        $http.get('')
+            .then((e) ->
+                $scope.players = if e.status == 200 then e.data else []
+                $scope.search = {}
+                $scope.pagination = Pagination.getNew(4)
+                $scope.updateFilter = () ->
+                    $scope.pagination.numPages = Math.ceil($scope.players.length/$scope.pagination.perPage)
+                    $scope.pagination.toPageId(0)
+                $scope.updateFilter()
 
-        $scope.open = () ->
-            modalInstance = $modal.open({
-              templateUrl: 'myModalContent.html',
-              controller: ModalInstanceCtrl,
-              resolve: {
-                items: () -> return $scope.players
-              }
-            })
+                $scope.open = () ->
+                    modalInstance = $modal.open({
+                        templateUrl: 'myModalContent.html',
+                        controller: ModalInstanceCtrl
+                    })
 
+            )
     ])
 
-ModalInstanceCtrl = ($scope, $modalInstance, items) ->
-
-    $scope.items = items
-    $scope.selected = {
-        item: $scope.items[0]
-    }
+ModalInstanceCtrl = ($scope, $modalInstance, $http) ->
 
     $scope.ok = () ->
-        $modalInstance.close($scope.selected.item)
+        data = {
+            'player1': $scope.player1
+            'player2': $scope.player2
+            'score1':  $scope.score1
+            'score2':  $scope.score2
+        }
+        $http.post('', data)
 
     $scope.cancel = () ->
         $modalInstance.dismiss('cancel')

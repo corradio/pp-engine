@@ -60,7 +60,7 @@
           <label for="player1" class="right inline">Player 1</label>
         </div>
         <div class="small-9 columns">
-          <input type="text" id="player1" placeholder="">
+          <input type="text" id="player1" placeholder="" ng-model="player1">
         </div>
       </div>
       <div class="row">
@@ -68,14 +68,14 @@
           <label for="score1" class="right inline">Score</label>
         </div>
         <div class="small-9 columns">
-          <input type="text" id="score1" placeholder="">
+          <input type="text" id="score1" placeholder="" ng-model="score1">
         </div>
       </div>
     </div>
     <div class="small-5 small-offset-2 columns">
       <div class="row">
         <div class="small-9 columns">
-          <input type="text" id="player2" placeholder="">
+          <input type="text" id="player2" placeholder="" ng-model="player2">
         </div>
         <div class="small-3 columns">
           <label for="player2" class="left inline">Player 2</label>
@@ -83,7 +83,7 @@
       </div>
       <div class="row">
         <div class="small-9 columns">
-          <input type="text" id="score2" placeholder="">
+          <input type="text" id="score2" placeholder="" ng-model="score2">
         </div>
         <div class="small-3 columns">
           <label for="score2" class="left inline">Score</label>
@@ -93,7 +93,7 @@
   </div>
   <div class="row collapse">
     <div class="small-4 small-offset-4 columns">
-      <a href="#" class="button small expand">Done</a>
+      <a href="#" class="button small expand" ng-click="ok()">Done</a>
     </div>
   </div>
   <a class="close-reveal-modal" ng-click="cancel()">&#215;</a>
