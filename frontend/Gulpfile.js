@@ -37,7 +37,7 @@ gulp.task('app-assets', function () {
     es.concat(
         gulp.src(['app/*.{css,html,ico,txt}', 'app/.htaccess'])
             .pipe(gulp.dest('dist/')),
-        gulp.src(['app/styles/*'])
+        gulp.src(['app/styles/**/*'])
             .pipe(gulp.dest('dist/styles')),
         gulp.src(['app/img/**/*'])
             .pipe(gulp.dest('dist/img')),

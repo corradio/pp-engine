@@ -1,16 +1,100 @@
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Company</th>
-      <th><a href="" ng-click="order=!order">Score</a></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr ng-repeat="player in players | orderBy:'score':order">
-      <td>{{ player.name }}</td>
-      <td>{{ player.company }}</td>
-      <td>{{ player.score }}</td>
-    </tr>
-  </tbody>
-</table>
+<form>
+  <div class="row collapse">
+    <div class="large-1 columns">
+      <span class="prefix"><i class="fa fa-search"></i></span>
+    </div>
+    <div class="large-9 columns">
+      <input type="text" id="filtered" placeholder="e.g. Rand Hindi" ng-model="search.name" ng-change="updateFilter()" />
+    </div>
+    <div class="large-2 columns">
+      <a href="#" class="button postfix" ng-click="open()">Add Match</a>
+    </div>
+  </div>
+</form>
+
+<div class="row collapse">
+  <div class="large-12 columns">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Company</th>
+          <th>
+            <a href="" ng-click="order=!order; currentPage=0" ng-init="order=true">Level</a>
+            <i ng-class="(order) ? 'fa-caret-up' : 'fa-caret-down'" class="fa right inline"></i>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="player in (results = players | filter:search) | orderBy:'level':order | startFrom: pagination.page * pagination.perPage | limitTo: pagination.perPage">
+          <td><a href="">{{ player.name }}</a></td>
+          <td>{{ player.company }}</td>
+          <td>{{ player.level }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row collapse">
+  <div class="pagination-centered large-12 columns">
+    <ul class="pagination">
+      <li ng-class="{unavailable: pagination.page == 0}" class="arrow"><a href="" ng-click="pagination.prevPage()">&laquo;</a></li>
+      <li ng-repeat="n in [] | range: pagination.numPages" ng-class="{current: n == pagination.page}">
+        <a href="" ng-click="pagination.toPageId(n)">{{ n + 1 }}</a>
+      </li>
+      <!-- <li class="unavailable"><a href="">&hellip;</a></li> -->
+      <li ng-class="{unavailable: pagination.page + 1 >= pagination.numPages}" class="arrow"><a href="" ng-click="pagination.nextPage()">&raquo;</a></li>
+    </ul>
+  </div>
+</div>
+
+<script type="text/ng-template" id="myModalContent.html">
+  <div class="row collapse">
+    <h3>Add a match</h3>
+  </div>
+  <div class="row collapse">
+    <div class="small-5 columns">
+      <div class="row">
+        <div class="small-3 columns">
+          <label for="player1" class="right inline">Player 1</label>
+        </div>
+        <div class="small-9 columns">
+          <input type="text" id="player1" placeholder="">
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-3 columns">
+          <label for="score1" class="right inline">Score</label>
+        </div>
+        <div class="small-9 columns">
+          <input type="text" id="score1" placeholder="">
+        </div>
+      </div>
+    </div>
+    <div class="small-5 small-offset-2 columns">
+      <div class="row">
+        <div class="small-9 columns">
+          <input type="text" id="player2" placeholder="">
+        </div>
+        <div class="small-3 columns">
+          <label for="player2" class="left inline">Player 2</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-9 columns">
+          <input type="text" id="score2" placeholder="">
+        </div>
+        <div class="small-3 columns">
+          <label for="score2" class="left inline">Score</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row collapse">
+    <div class="small-4 small-offset-4 columns">
+      <a href="#" class="button small expand">Done</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal" ng-click="cancel()">&#215;</a>
+</script>
