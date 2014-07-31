@@ -1,1 +1,23 @@
-<h1>{{ user.name }}</h1>
+<h1 class="text-center">{{ user.name }} <small>{{ user.score }} points</small></h1>
+
+<div class="path-container">
+
+  <div ng-repeat="game in games | orderBy:'date':true" class="row path-item">
+    <div class="large-7 columns {{$index % 2 == 0 ? 'push-5' : ''}}">
+		<div class="circle circle-{{$index % 2 == 0 ? 'left' : 'right'}} {{$index % 2 == 0 ? 'left' : 'right'}}"></div>
+	</div>
+	<div class="large-5 columns path-text {{$index % 2 == 0 ? 'left' : 'right'}} {{$index % 2 == 0 ? 'pull-6' : ''}}">
+      <h4>
+      	{{won(game) ? 'Wins' : 'Lost'}} against {{ opponent(game) }} ({{userScore(game)}}/{{opponentScore(game)}})
+      </h4>
+      <p>
+      	<span class="label {{won(game) ? 'success' : 'alert'}}">
+      		<i class="fi-arrow-{{won(game) ? 'up' : 'down'}} large"></i> {{displayGain(game)}}
+      	</span>  
+      	{{ fromDate(game.date) }}
+      </p>
+    </div>
+  </div>
+
+  <span class="line hide-for-small"></span>
+</div>
