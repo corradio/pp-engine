@@ -1,0 +1,31 @@
+{
+  "name": "pp-engine",
+  "version": "0.0.0",
+  "description": "ping-pong engine",
+  "main": "app.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tristandeleu/pp-engine.git"
+  },
+  "keywords": [
+    "ping-pong",
+    "engine"
+  ],
+  "author": "Joseph Dureau",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tristandeleu/pp-engine/issues"
+  },
+  "homepage": "https://github.com/tristandeleu/pp-engine",
+  "dependencies": {
+    "express": "*",
+    "http": "*",
+    "elo-rank": "0.2.2",
+    "mongoose": "~3.6.13",
+    "body-parser": "~1.0.1",
+    "node-uuid": "*",
+    "mongodb": "*",
+    "async": "*"
+  }
+}
