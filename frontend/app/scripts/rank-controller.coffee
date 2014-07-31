@@ -31,6 +31,9 @@ ModalInstanceCtrl = ($scope, $modalInstance, $http) ->
             'score2':  $scope.score2
         }
         $http.post('', data)
+            .success(
+                $modalInstance.close()
+            )
 
     $scope.cancel = () ->
         $modalInstance.dismiss('cancel')
