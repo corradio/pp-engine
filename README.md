@@ -25,3 +25,29 @@ __Load dependencies__ :
  - `pip install -r requirements.txt`
 
 __Build the dashboard__ : `gulp build`
+
+
+## Server
+
+__Load dependencies__ :
+
+ - `cd server`
+ - `npm install`
+
+__Launch the server__ :
+
+ - `node server.js'
+
+
+## RESTful API
+
+__submit a new result__:
+
+send a POST request to `api/games/`
+with body { <player1>:<score1>, <player2>:<score2> }
+
+__get user info__:
+send a GET request to `api/users/:user`
+
+__get user games__:
+send a GET request to `api/users/:user/games`
