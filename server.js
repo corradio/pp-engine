@@ -43,7 +43,7 @@ router.route('/games')
       if (err){
         res.send(err)
       }
-      res.json({ message: 'Thanks for playing!' });
+      res.json({ message: 'Thanks for playing! The rankings now are Tristan ' + rankings["Tristan"] + ', Jo ' + rankings["Jo"] + ' and Pierre '  + rankings["Pierre"] });
     })
 
   });
