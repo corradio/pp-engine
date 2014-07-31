@@ -1,9 +1,9 @@
 import numpy as np
 
 PARAMS = {
-    'p_mon': 1.0, # Minimum number of points exchangeable (if two players at same level compete)
+    'p_min': 1.0, # Minimum number of points exchangeable (if two players at same level compete)
     'p_slope': 1.0, # Extra points exchanged per level difference
-    'p_winning_ratio_slope': 0.05, # Extra points given for each percentage of balls won
+    'p_wining_ratio_coef': 0.05, # Extra points given for each percentage point of ball win above 50%
     'level_delta': 2.0, # Number of points required to reach level 2
     'level_delta_increment': 1.0 # Increment of number of points to next level, added per level
 }
@@ -11,7 +11,7 @@ PARAMS = {
 def compute_point_exchange(delta_levels, winning_ratio):
     dp = int(
         np.round(
-            PARAMS['p_mon'] + PARAMS['p_slope'] * np.abs(delta_levels) + PARAMS['p_winning_ratio_slope'] * winning_ratio * 100.0
+            PARAMS['p_min'] + PARAMS['p_slope'] * np.abs(delta_levels) + PARAMS['p_points_for_nomatch'] * np.abs(winning_ratio - 0.5) * 100.0
         )
     )
     return dp
