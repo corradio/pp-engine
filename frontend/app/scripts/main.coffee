@@ -4,4 +4,5 @@ $(document).foundation()
 require('./app')
 
 # Controllers
-require('./controllers')
+require('./rank-controller')
+require('./user-controller')

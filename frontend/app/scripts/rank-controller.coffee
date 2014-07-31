@@ -1,6 +1,6 @@
 # Controllers
 
-angular.module('ppApp.controllers', [])
+angular.module('ppApp.controllers.rank', [])
     .controller('RankCtrl', ['$scope', ($scope) ->
         $scope.players = [
             {
