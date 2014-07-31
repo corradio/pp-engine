@@ -1,0 +1,14 @@
+{
+  "name": "pp-engine",
+  "version": "0.0.1",
+  "description": "An engine to keep track of ping-pong ranks",
+  "dependencies": {
+    "angular": "1.2.x",
+    "angular-route": "1.2.x",
+    "angular-loader": "1.2.x",
+    "angular-mocks": "~1.2.x",
+    "html5-boilerplate": "~4.3.0",
+    "d3": "~3.1.5",
+    "foundation": "~5.1.1"
+  }
+}

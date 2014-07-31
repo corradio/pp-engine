@@ -1,0 +1,21 @@
+{
+  "name": "pp-engine",
+  "version": "0.0.1",
+  "description": "An engine to keep track of ping-pong ranks",
+  "devDependencies": {
+    "karma": "~0.10",
+    "protractor": "~0.20.1",
+    "http-server": "^0.6.1",
+    "bower": "^1.3.1",
+    "shelljs": "^0.2.6",
+    "coffeeify": "~0.5.2",
+    "event-stream": "~3.1.0",
+    "gulp": "~3.6.1",
+    "gulp-coffee": "~1.2.5",
+    "gulp-compass": "~1.0.6",
+    "gulp-concat": "~2.1.7",
+    "gulp-util": "~2.2.10",
+    "gulp-autoprefixer": "0.0.7",
+    "gulp-browserify": "~0.2.7"
+  }
+}

@@ -1,0 +1,16 @@
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Company</th>
+      <th><a href="" ng-click="order=!order">Score</a></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="player in players | orderBy:'score':order">
+      <td>{{ player.name }}</td>
+      <td>{{ player.company }}</td>
+      <td>{{ player.score }}</td>
+    </tr>
+  </tbody>
+</table>
