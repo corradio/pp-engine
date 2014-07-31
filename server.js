@@ -4,6 +4,7 @@ var express = require('express')
   , fs = require('fs')
   , uuid = require('node-uuid')
   , MongoClient = require('mongodb').MongoClient
+  , path = require('path')
   , async = require('async');
 
 
@@ -17,33 +18,32 @@ PARAMS = {
 
 
 
-// function compute_point_exchange(delta_levels, winning_ratio){
-//     dp = int(
-//         Math.round(
-//             PARAMS['p_min'] + PARAMS['p_slope'] * Math.abs(delta_levels) + PARAMS['p_points_for_nomatch'] * Math.abs(winning_ratio - 0.5) * 100.0
-//         )
-//     )
-//     return dp;
-// }
+function compute_point_exchange(delta_levels, winning_ratio){
+    dp = Math.round(
+            PARAMS['p_min'] + PARAMS['p_slope'] * Math.abs(delta_levels) + PARAMS['p_points_for_nomatch'] * Math.abs(winning_ratio - 0.5) * 100.0
+        )
+    return dp;
+}
 
-// function compute_level(points){
-//     c1 = PARAMS['level_delta']
-//     c2 = PARAMS['level_delta_increment']
-//     a = 0.5*c2
-//     b = -0.5*c2 + c1
-//     c = -points
-//     det = b*b - 4.0 * a * c
-//     r = [0.5 * (-b + Math.sqrt(det))/a, 0.5 * (-b - Math.sqrt(det))/a]
-//     return int(Math.max(Math.floor(r)))
-// }
+function compute_level(points){
+    c1 = PARAMS['level_delta']
+    c2 = PARAMS['level_delta_increment']
+    console.log(c1,c2)
+    a = 0.5*c2
+    b = -0.5*c2 + c1
+    c = -points
+    console.log(a,b,c)
+    det = b*b - 4.0 * a * c
+    console.log('det')
+    console.log(det)
+    r = [0.5 * (-b + Math.sqrt(det))/a, 0.5 * (-b - Math.sqrt(det))/a]
+    console.log(r)
+    return Math.max(Math.floor(r))
+}
 
-// function compute_points_to_next_level(level){
-//     return PARAMS['level_delta'] * level + (level - 1.0) * level * 0.5 * PARAMS['level_delta_increment']
-// }
-
-
-
-
+function compute_points_to_next_level(level){
+    return PARAMS['level_delta'] * level + (level - 1.0) * level * 0.5 * PARAMS['level_delta_increment']
+}
 
 
 var app = express()
@@ -54,16 +54,10 @@ app.use(bodyParser());
 
 var port = 3000
 
-// ROUTES FOR OUR API
-// =============================================================================
-var router = express.Router();        // get an instance of the express Router
-
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/', function(req, res) {
-  res.json({ message: 'hooray! welcome to our api!' });
-});
 
 var MONGODB = process.env['MONGODB']
+
+app.use(express.static(path.join(__dirname, "frontend/dist")));
 
 MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
 
@@ -101,8 +95,13 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
         },function(err){
           if(err) res.send(err)
 
-          // var winningRatio = Math.abs(scores[nameA]-scores[nameB]) / Math.max(scores[nameA],scores[nameB])
-
+          var levelA = compute_level(scores[nameA])
+          var levelB = compute_level(scores[nameB])
+          console.log('levels')
+          console.log(levelA,levelB)
+          var winning_ratio = Math.abs(scores[nameA]-scores[nameB]) / Math.max(scores[nameA],scores[nameB])
+          point_exchange = compute_point_exchange(levelA-levelB, winning_ratio)
+          console.log(point_exchange)
 
           // Update scores
           var expectedScoreA = elo.getExpected(scores[nameA],scores[nameB]);
@@ -189,17 +188,20 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
     }
   });
 
-  app.get('/',function(req,res){
-    res.sendfile(__dirname + '/frontend/app/index.html');
+
+  app.get('/html/*',function(req,res){
+    pth = req.url.slice(6)
+    console.log(pth)
+    res.sendfile(__dirname + '/frontend/dist/' + pth);
   })
 
-  app.get('/rank',function(req,res){
-    res.sendfile(__dirname + '/frontend/app/pages/rank.html');
-  })
+  // app.get('/rank',function(req,res){
+  //   res.sendfile(__dirname + '/frontend/app/pages/rank.html');
+  // })
 
-  app.get('/user',function(req,res){
-    res.sendfile(__dirname + '/frontend/app/pages/user.html');
-  })
+  // app.get('/user',function(req,res){
+  //   res.sendfile(__dirname + '/frontend/app/pages/user.html');
+  // })
 
   // app.get('/', express.static(__dirname + '/frontend/index.html'));
 
