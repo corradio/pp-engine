@@ -42,12 +42,11 @@ __Launch the server__ :
 ## RESTful API
 
 __submit a new result__:
-
 send a POST request to `api/games/`
-with body { <player1>:<score1>, <player2>:<score2> }
+with body { player1:score1, player2:score2 }
 
 __get user info__:
-send a GET request to `api/users/:user`
+send a GET request to `api/users/:player`
 
 __get user games__:
-send a GET request to `api/users/:user/games`
+send a GET request to `api/users/:player/games`
