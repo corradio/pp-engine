@@ -23,6 +23,9 @@
     "http": "*",
     "elo-rank": "0.2.2",
     "mongoose": "~3.6.13",
-    "body-parser": "~1.0.1"
+    "body-parser": "~1.0.1",
+    "node-uuid": "*",
+    "mongodb": "*",
+    "async": "*"
   }
 }

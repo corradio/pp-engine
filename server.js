@@ -1,7 +1,10 @@
 var express = require('express')
   , elo = require('elo-rank')(15)
   , bodyParser = require('body-parser')
-  , fs = require('fs');
+  , fs = require('fs')
+  , uuid = require('node-uuid')
+  , MongoClient = require('mongodb').MongoClient
+  , async = require('async');
 
 
 var app = express()
@@ -21,64 +24,144 @@ router.get('/', function(req, res) {
   res.json({ message: 'hooray! welcome to our api!' });
 });
 
-router.route('/games')
+var MONGODB = process.env['MONGODB']
 
-  .post(function(req, res) {
+MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
 
-    console.log(req.body)
-    rankings = require(process.cwd()+'/rankings.json')
-    nameA = Object.keys(req.body)[0];
-    nameB = Object.keys(req.body)[1];
-    rankA = rankings[nameA]
-    rankB = rankings[nameB]
-    console.log(rankA,rankB)
-    var expectedScoreA = elo.getExpected(rankA,rankB);
-    var expectedScoreB = elo.getExpected(rankB,rankA);
+  if(err) throw err;
+  players = db.collection('players');
+  games = db.collection('games');
 
-    result = req.body[nameA]>req.body[nameB] ? 1:0;
-    rankings[nameA] = elo.updateRating(expectedScoreA,result,rankA);
-    rankings[nameB] = elo.updateRating(expectedScoreB,1-result,rankB);
+  app.post('/api/games',function(req, res){
 
-    fs.writeFile(process.cwd()+'/rankings.json',JSON.stringify(rankings),function(err){
-      if (err){
-        res.send(err)
+    if(Object.keys(req.body).length != 2){
+      res.status(400).send('Body should be in the format { playerA: scoreA, playerB: scoreB}')
+    } else {
+
+      game_uuid = uuid.v1();
+
+      nameA = Object.keys(req.body)[0].toLowerCase();
+      nameB = Object.keys(req.body)[1].toLowerCase();
+
+      // Check if these players are in the database
+      scores = {}
+      async.each([ nameA, nameB ],
+        function(name,cb){
+          players.find({ "name": name }).toArray(function(err, results) {
+            if(results.length==0){
+              players.insert({ "name": name, "score": 1200}, function(err){
+                if(err) return cb(err)
+                scores[name] = 1200
+                cb()
+              })
+            } else{
+              scores[name] = results[0]['score']
+              cb()
+            }
+          })
+        },function(err){
+          if(err) res.send(err)
+
+          // Update scores
+          var expectedScoreA = elo.getExpected(scores[nameA],scores[nameB]);
+          var expectedScoreB = elo.getExpected(scores[nameB],scores[nameA]);
+          result = req.body[nameA]>req.body[nameB] ? 1:0;
+          oldscores = scores;
+          scores[nameA] = elo.updateRating(expectedScoreA,result,scores[nameA]);
+          scores[nameB] = elo.updateRating(expectedScoreB,1-result,scores[nameB]);
+
+          // Push the new scores to the db
+          async.each([ nameA, nameB ],
+            function(name,cb){
+              players.findAndModify({ "name": name }
+                ,[]
+                ,{$set: {score: scores[name] }}
+                ,{}
+                , function(err, object) {
+                  if(err) return cb(err)
+                  cb()
+                }
+              )
+            },
+            function(err){
+              if(err) res.send(err)
+              games.insert({
+                uuid: game_uuid,
+                date: new Date().toISOString(),
+                players: [
+                  {
+                    name: nameA,
+                    score: scores[nameA],
+                    gain: scores[nameA] - oldscores[nameA]
+                  },
+                  {
+                    name: nameB,
+                    score: scores[nameB],
+                    gain: scores[nameB] - oldscores[nameB]
+                  }
+                ]
+              }, function(err){
+                if(err) res.send(err)
+                players.find().toArray(function(err, results) {
+                  res.status(200).send('Thanks for playing!')
+                })
+              })
+            }
+          )
+        }
+      );
+    }
+  });
+
+  // fetching user data
+  app.get('/api/users/*',function(req, res){
+    pars = req.url.slice(11);
+    if(pars.indexOf('/')>-1){
+      // call to '/api/users/:userid/games
+      if(pars.slice(pars.indexOf('/')+1)=='games'){
+        user = pars.slice(0,pars.indexOf('/'));
+        games.find(
+          {
+            players: {
+              $elemMatch: {
+                name: user
+              }
+            }
+          }
+        ).toArray(function(err, results) {
+          res.status(200).send(results)
+        })
+      } else {
+        res.status(400).send('invalid query')
       }
-      res.json({ message: 'Thanks for playing! The rankings now are Tristan ' + rankings["Tristan"] + ', Jo ' + rankings["Jo"] + ' and Pierre '  + rankings["Pierre"] });
-    })
-
+    } else {
+      // call to '/api/users/:userid
+      user = pars;
+      players.find({'name': user}).toArray(function(err, results) {
+        if(results.length==0){
+          res.status(400).send('user not found')
+        } else {
+          res.status(200).send(results[0])
+        }
+      })
+    }
   });
 
 
-
-app.use('/api', router);
-
-// START THE SERVER
-// =============================================================================
-app.listen(port);
-console.log('Magic happens on port ' + port);
+  app.use('/api', router);
 
 
-// var playerA = 1200;
-// var playerB = 1400;
 
 
-// //Gets expected score for first parameter
-// var expectedScoreA = elo.getExpected(playerA,playerB);
-// var expectedScoreB = elo.getExpected(playerB,playerA);
+  // START THE SERVER
+  // =============================================================================
+  app.listen(port);
+  console.log('Magic happens on port ' + port);
 
-// //update score, 1 if won 0 if lost
-// playerA = elo.updateRating(expectedScoreA,1,playerA);
-// playerB = elo.updateRating(expectedScoreB,0,playerB);
+})
 
 
-// app.get('*', function (req, res) {
-//   console.log(req.url)
-//   rankings = require(process.cwd()+'/rankings.json')
-//   playerA = rankings['Jo']
-//   playerB = rankings['Tristan']
-//   var expectedScoreA = elo.getExpected(playerA,playerB);
-//   var expectedScoreB = elo.getExpected(playerB,playerA);
-//   res.send('Hello World2')
-// })
 
-// app.listen(3000)
+
+
+
