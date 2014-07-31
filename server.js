@@ -13,7 +13,8 @@ PARAMS = {
     'p_slope': 1.0, // Extra points exchanged per level difference
     'p_wining_ratio_coef': 0.05, // Extra points given for each percentage point of ball win above 50%
     'level_delta': 2.0, // Number of points required to reach level 2
-    'level_delta_increment': 1.0 // Increment of number of points to next level, added per level
+    'level_delta_increment': 1.0, // Increment of number of points to next level, added per level
+    'p_points_for_nomatch': 10 // TODO: THIS is random, was missing
 }
 
 
@@ -28,17 +29,12 @@ function compute_point_exchange(delta_levels, winning_ratio){
 function compute_level(points){
     c1 = PARAMS['level_delta']
     c2 = PARAMS['level_delta_increment']
-    console.log(c1,c2)
     a = 0.5*c2
     b = -0.5*c2 + c1
     c = -points
-    console.log(a,b,c)
     det = b*b - 4.0 * a * c
-    console.log('det')
-    console.log(det)
     r = [0.5 * (-b + Math.sqrt(det))/a, 0.5 * (-b - Math.sqrt(det))/a]
-    console.log(r)
-    return Math.max(Math.floor(r))
+    return Math.floor(Math.max.apply(Math, r))
 }
 
 function compute_points_to_next_level(level){
@@ -98,19 +94,11 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
 
           var levelA = compute_level(scores[nameA])
           var levelB = compute_level(scores[nameB])
-          console.log('levels')
-          console.log(levelA,levelB)
           var winning_ratio = Math.abs(scores[nameA]-scores[nameB]) / Math.max(scores[nameA],scores[nameB])
           point_exchange = compute_point_exchange(levelA-levelB, winning_ratio)
-          console.log(point_exchange)
-
-          // Update scores
-          var expectedScoreA = elo.getExpected(scores[nameA],scores[nameB]);
-          var expectedScoreB = elo.getExpected(scores[nameB],scores[nameA]);
-          result = req.body[nameA]>req.body[nameB] ? 1:0;
-          oldscores = scores;
-          scores[nameA] = elo.updateRating(expectedScoreA,result,scores[nameA]);
-          scores[nameB] = elo.updateRating(expectedScoreB,1-result,scores[nameB]);
+          result_coef = req.body[nameA]>req.body[nameB] ? 1:-1;
+          scores[nameA] = max(0,scores[nameA] + result_coef * point_exchange);
+          scores[nameB] = max(0,scores[nameB] - result_coef * point_exchange);
 
           // Push the new scores to the db
           async.each([ nameA, nameB ],
@@ -134,12 +122,12 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
                   {
                     name: nameA,
                     score: scores[nameA],
-                    gain: scores[nameA] - oldscores[nameA]
+                    gain: result_coef * point_exchange
                   },
                   {
                     name: nameB,
                     score: scores[nameB],
-                    gain: scores[nameB] - oldscores[nameB]
+                    gain: - result_coef * point_exchange
                   }
                 ]
               }, function(err){
