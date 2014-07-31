@@ -1,5 +1,5 @@
 angular.module('ppApp.controllers.user', [])
-    .controller('USerCtrl', ['$scope', ($scope) ->
+    .controller('UserCtrl', ['$scope', ($scope) ->
         $scope.user = {name: "Pierre", score: 2360}
         
     ])
