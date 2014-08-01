@@ -2,7 +2,7 @@
 
 angular.module('ppApp.controllers.rank', [])
     .controller('RankCtrl', ['$scope', 'Pagination', '$modal', '$http', ($scope, Pagination, $modal, $http) ->
-        $http.get('')
+        $http.get('api/users')
             .then((e) ->
                 $scope.players = if e.status == 200 then e.data else []
                 $scope.search = {}

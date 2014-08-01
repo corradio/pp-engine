@@ -143,6 +143,13 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
     }
   });
 
+  app.get('/api/users', function(req, res) {
+    players.find()
+    .toArray(function(err, results) {
+      res.status(200).send(results)
+    })
+  });
+
   // fetching user data
   app.get('/api/users/*',function(req, res){
     pars = req.url.slice(11);

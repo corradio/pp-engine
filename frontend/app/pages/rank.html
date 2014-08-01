@@ -27,7 +27,7 @@
       </thead>
       <tbody>
         <tr ng-repeat="player in (results = players | filter:search) | orderBy:'level':order | startFrom: pagination.page * pagination.perPage | limitTo: pagination.perPage">
-          <td><a href="">{{ player.name }}</a></td>
+          <td><a href="#/user/{{player.name}}">{{ player.name }}</a></td>
           <td>{{ player.company }}</td>
           <td>{{ player.level }}</td>
         </tr>
