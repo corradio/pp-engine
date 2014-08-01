@@ -74,38 +74,39 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
       nameB = Object.keys(req.body)[1].toLowerCase();
 
       // Check if these players are in the database
-      scores = {}
+      points = {}
       async.each([ nameA, nameB ],
         function(name,cb){
           players.find({ "name": name }).toArray(function(err, results) {
             if(results.length==0){
-              players.insert({ "name": name, "score": 1200}, function(err){
+              players.insert({ "name": name, "points": 0}, function(err){
                 if(err) return cb(err)
-                scores[name] = 1200
+                points[name] = 0
                 cb()
               })
             } else{
-              scores[name] = results[0]['score']
+              points[name] = results[0]['points']
               cb()
             }
           })
         },function(err){
+
           if(err) res.send(err)
 
-          var levelA = compute_level(scores[nameA])
-          var levelB = compute_level(scores[nameB])
-          var winning_ratio = Math.abs(scores[nameA]-scores[nameB]) / Math.max(scores[nameA],scores[nameB])
+          var levelA = compute_level(points[nameA])
+          var levelB = compute_level(points[nameB])
+          var winning_ratio = Math.abs(req.body[nameA]-req.body[nameB]) / Math.max(req.body[nameA],req.body[nameB])
           point_exchange = compute_point_exchange(levelA-levelB, winning_ratio)
           result_coef = req.body[nameA]>req.body[nameB] ? 1:-1;
-          scores[nameA] = Math.max(0,scores[nameA] + result_coef * point_exchange);
-          scores[nameB] = Math.max(0,scores[nameB] - result_coef * point_exchange);
+          points[nameA] = Math.max(0,points[nameA] + result_coef * point_exchange);
+          points[nameB] = Math.max(0,points[nameB] - result_coef * point_exchange);
 
-          // Push the new scores to the db
+          // Push the new points to the db
           async.each([ nameA, nameB ],
             function(name,cb){
               players.findAndModify({ "name": name }
                 ,[]
-                ,{$set: {score: scores[name] }}
+                ,{$set: {points: points[name], level: compute_level(points[name]) }}
                 ,{}
                 , function(err, object) {
                   if(err) return cb(err)
@@ -121,12 +122,12 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
                 players: [
                   {
                     name: nameA,
-                    score: scores[nameA],
+                    score: req.body[nameA],
                     gain: result_coef * point_exchange
                   },
                   {
                     name: nameB,
-                    score: scores[nameB],
+                    score: req.body[nameB],
                     gain: - result_coef * point_exchange
                   }
                 ]
