@@ -1,22 +1,7 @@
 angular.module('ppApp.controllers.user', [])
-    .controller('UserCtrl', ['$scope', ($scope) ->
-        $scope.user = {name: "Pierre", score: 2360};
-      
-        $scope.games = [
-            {
-                date : "2014-07-26T20:12:05",
-                players : [
-                    {name : "Julie", score : 21, gain : 253},
-                    {name : "Pierre", score : 18, gain : -200}
-                ]
-            },{
-                date : "2014-07-28T12:31:09",
-                players : [
-                    {name : "Pierre", score : 21, gain : 400},
-                    {name : "Tristan", score : 11, gain : -22}
-                ]
-            }
-        ];
+    .controller('UserCtrl', ['$scope', '$http', '$routeParams', ($scope, $http, $routeParams) ->
+        $scope.user =  $http.get('api/users/' + $routeParams.userId)
+        $scope.games = $http.get('api/users/' + $routeParams.userId + '/games')
 
         $scope.fromDate = (date) -> moment(date, 'YYYYMMDDThh:mm:ss').fromNow()
 

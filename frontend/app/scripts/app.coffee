@@ -4,6 +4,6 @@ app = angular.module('ppApp', ['ngRoute', 'ngResource', 'mm.foundation', 'simple
     .config(['$routeProvider', ($routeProvider) ->
         $routeProvider
             .when('/rank', {templateUrl: 'pages/rank.html', controller: 'RankCtrl'})
-            .when('/user', {templateUrl: 'pages/user.html', controller: 'UserCtrl'})
+            .when('/user/:userId', {templateUrl: 'pages/user.html', controller: 'UserCtrl'})
             .otherwise({redirectTo: '/rank'})
     ])
