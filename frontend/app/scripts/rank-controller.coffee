@@ -23,14 +23,18 @@ angular.module('ppApp.controllers.rank', [])
 
 ModalInstanceCtrl = ($scope, $modalInstance, $http) ->
 
+    $scope.player1 = {name : "", score: 0}
+    $scope.player2 = {name : "", score: 0}
+
     $scope.ok = () ->
-        data = {
-            'player1': $scope.player1
-            'player2': $scope.player2
-            'score1':  $scope.score1
-            'score2':  $scope.score2
-        }
-        $http.post('', data)
+        console.log($scope.player1)
+        
+        data = {}
+        data[$scope.player1.name] = $scope.player1.score
+        data[$scope.player2.name] = $scope.player2.score
+        console.log(data)
+
+        $http.post('api/games', data)
             .success(
                 $modalInstance.close()
             )

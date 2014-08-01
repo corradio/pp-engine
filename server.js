@@ -97,8 +97,8 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
           var winning_ratio = Math.abs(scores[nameA]-scores[nameB]) / Math.max(scores[nameA],scores[nameB])
           point_exchange = compute_point_exchange(levelA-levelB, winning_ratio)
           result_coef = req.body[nameA]>req.body[nameB] ? 1:-1;
-          scores[nameA] = max(0,scores[nameA] + result_coef * point_exchange);
-          scores[nameB] = max(0,scores[nameB] - result_coef * point_exchange);
+          scores[nameA] = Math.max(0,scores[nameA] + result_coef * point_exchange);
+          scores[nameB] = Math.max(0,scores[nameB] - result_coef * point_exchange);
 
           // Push the new scores to the db
           async.each([ nameA, nameB ],
