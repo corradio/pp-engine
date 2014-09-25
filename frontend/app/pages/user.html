@@ -1,4 +1,4 @@
-<h1 class="text-center"><i class="fi-torso large"></i> {{ user.name }} <small>{{ user.score }} points</small></h1>
+<h1 class="text-center"><i class="fi-torso large"></i> {{ user.name }} <small>level {{ user.level }} <small>({{ user.points }} points)</small></small></h1>
 
 <div class="path-container">
 
@@ -8,7 +8,7 @@
 	</div>
 	<div class="large-5 columns path-text {{$index % 2 == 0 ? 'left' : 'right'}} {{$index % 2 == 0 ? 'pull-6' : ''}}">
       <h4>
-      	{{won(game) ? 'Wins' : 'Lost'}} against {{ opponent(game) }} ({{userScore(game)}}/{{opponentScore(game)}})
+      	{{won(game) ? 'Won' : 'Lost'}} against {{ opponent(game) }} {{userScore(game)}}-{{opponentScore(game)}}
       </h4>
       <p>
       	<span class="label {{won(game) ? 'success' : 'alert'}}">

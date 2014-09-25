@@ -2,7 +2,7 @@ angular.module('ppApp.controllers.user', [])
     .controller('UserCtrl', ['$scope', '$http', '$routeParams', ($scope, $http, $routeParams) ->
         $http.get('api/users/' + $routeParams.userId)
             .then((e) ->
-                $scope.user =  if e.status == 200 then e.data else {}
+                $scope.user = if e.status == 200 then e.data else {}
         )
 
         $http.get('api/users/' + $routeParams.userId + '/games')

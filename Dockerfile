@@ -11,7 +11,7 @@ RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN npm install forever -g
 
 # Download web-app
-RUN cd /opt && git clone https://github.com/tristandeleu/pp-engine.git
+ADD . /opt/pp-engine
 RUN cd /opt/pp-engine && npm install
 RUN ln -s /opt/pp-engine/rankings.json /rankings.json
 
