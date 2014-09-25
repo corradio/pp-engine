@@ -31,12 +31,12 @@ __Build the dashboard__ : `gulp build`
 
 __Load dependencies__ :
 
- - `cd server`
  - `npm install`
 
 __Launch the server__ :
 
- - `node server.js'
+ - `export MONGODB_HOST=localhost`
+ - `node server.js`
 
 
 ## RESTful API

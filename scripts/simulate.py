@@ -11,7 +11,7 @@ PARAMS = {
 def compute_point_exchange(delta_levels, winning_ratio):
     dp = int(
         np.round(
-            PARAMS['p_min'] + PARAMS['p_slope'] * np.abs(delta_levels) + PARAMS['p_points_for_nomatch'] * np.abs(winning_ratio - 0.5) * 100.0
+            PARAMS['p_min'] + PARAMS['p_slope'] * np.abs(delta_levels) + PARAMS['p_points_for_nomatch'] * winning_ratio
         )
     )
     return dp

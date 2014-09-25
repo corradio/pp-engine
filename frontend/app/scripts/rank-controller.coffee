@@ -27,11 +27,9 @@ ModalInstanceCtrl = ($scope, $modalInstance, $http) ->
     $scope.player2 = {name : "", score: 0}
 
     $scope.ok = () ->
-        console.log($scope.player1)
-        
         data = {}
-        data[$scope.player1.name] = $scope.player1.score
-        data[$scope.player2.name] = $scope.player2.score
+        data[$scope.player1.name] = parseInt($scope.player1.score)
+        data[$scope.player2.name] = parseInt($scope.player2.score)
         console.log(data)
 
         $http.post('api/games', data)

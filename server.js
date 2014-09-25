@@ -21,7 +21,7 @@ PARAMS = {
 
 function compute_point_exchange(delta_levels, winning_ratio){
     dp = Math.round(
-            PARAMS['p_min'] + PARAMS['p_slope'] * Math.abs(delta_levels) + PARAMS['p_points_for_nomatch'] * Math.abs(winning_ratio - 0.5) * 100.0
+            PARAMS['p_min'] + PARAMS['p_slope'] * Math.abs(delta_levels) + PARAMS['p_points_for_nomatch'] * winning_ratio
         )
     return dp;
 }
@@ -52,7 +52,7 @@ app.use(bodyParser());
 var port = 3000
 
 
-var MONGODB = process.env['MONGODB']
+var MONGODB = process.env['MONGODB_HOST']
 
 app.use(express.static(path.join(__dirname, "frontend/dist")));
 
@@ -70,8 +70,8 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
 
       game_uuid = uuid.v1();
 
-      nameA = Object.keys(req.body)[0].toLowerCase();
-      nameB = Object.keys(req.body)[1].toLowerCase();
+      nameA = Object.keys(req.body)[0];
+      nameB = Object.keys(req.body)[1];
 
       // Check if these players are in the database
       points = {}
@@ -97,6 +97,17 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
           var levelB = compute_level(points[nameB])
           var winning_ratio = Math.abs(req.body[nameA]-req.body[nameB]) / Math.max(req.body[nameA],req.body[nameB])
           point_exchange = compute_point_exchange(levelA-levelB, winning_ratio)
+          console.log(
+            nameA + 
+            '(' + levelA + ') ' + 
+            req.body[nameA] + 
+            ' - ' + 
+            req.body[nameB] + 
+            ' ' + nameB + 
+            '(' + levelB + ') ' + 
+            ' -- Exchanged ' + 
+            point_exchange + 
+            ' points')
           result_coef = req.body[nameA]>req.body[nameB] ? 1:-1;
           points[nameA] = Math.max(0,points[nameA] + result_coef * point_exchange);
           points[nameB] = Math.max(0,points[nameB] - result_coef * point_exchange);
