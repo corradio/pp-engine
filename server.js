@@ -108,9 +108,25 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
             ' -- Exchanged ' + 
             point_exchange + 
             ' points')
-          result_coef = req.body[nameA]>req.body[nameB] ? 1:-1;
-          points[nameA] = Math.max(0,points[nameA] + result_coef * point_exchange);
-          points[nameB] = Math.max(0,points[nameB] - result_coef * point_exchange);
+          var result_coef = req.body[nameA]>req.body[nameB] ? 1:-1
+
+          theoreticalScoreA = points[nameA] + result_coef * point_exchange
+          if (theoreticalScoreA < 0) {
+            points[nameA] = 0
+            gainA = result_coef * point_exchange - theoreticalScoreA
+          } else {
+            points[nameA] = theoreticalScoreA
+            gainA = result_coef * point_exchange
+          }
+
+          theoreticalScoreB = points[nameB] - result_coef * point_exchange
+          if (theoreticalScoreB < 0) {
+            points[nameB] = 0
+            gainB = -result_coef * point_exchange - theoreticalScoreB
+          } else {
+            points[nameB] = theoreticalScoreB
+            gainB = -result_coef * point_exchange
+          }
 
           // Push the new points to the db
           async.each([ nameA, nameB ],
@@ -134,12 +150,12 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
                   {
                     name: nameA,
                     score: req.body[nameA],
-                    gain: result_coef * point_exchange
+                    gain: gainA
                   },
                   {
                     name: nameB,
                     score: req.body[nameB],
-                    gain: - result_coef * point_exchange
+                    gain: gainB
                   }
                 ]
               }, function(err){
