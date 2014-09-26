@@ -17,6 +17,7 @@ RUN ln -s /opt/pp-engine/rankings.json /rankings.json
 
 # Start web-app
 EXPOSE 3000
+WORKDIR /opt/pp-engine
 CMD forever /opt/pp-engine/server.js
 
 

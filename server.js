@@ -5,7 +5,8 @@ var express = require('express')
   , uuid = require('node-uuid')
   , MongoClient = require('mongodb').MongoClient
   , path = require('path')
-  , async = require('async');
+  , async = require('async')
+  , statsd = require('node-statsd');
 
 
 PARAMS = {
@@ -53,6 +54,9 @@ var port = 3000
 
 
 var MONGODB = process.env['MONGODB_HOST']
+var statsdClient = new statsd.StatsD()
+statsdClient.post = 8125
+statsdClient.host = process.env['STATSD_HOST']
 
 app.use(express.static(path.join(__dirname, "frontend/dist")));
 
@@ -137,6 +141,10 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
                 ,{}
                 , function(err, object) {
                   if(err) return cb(err)
+                  if (process.env['ENV'] == 'PROD') {
+                    statsdClient.gauge('pp-engine.' + name + '.points', points[name]);
+                    statsdClient.gauge('pp-engine.' + name + '.level', compute_level(points[name]));
+                  }
                   cb()
                 }
               )

@@ -22,7 +22,7 @@ shell:
 	$(DOCKER) run -t \
 		$(ENV) \
 		-v /home/shared/pois/:/opt/data \
-		-i "$(REGISTRY)/$(TAG):$(VERSION)" zsh
+		-i "$(REGISTRY)/$(TAG):$(VERSION)" sh
 
 ## MAESTRO
 MAESTRO=python -u -m maestro -f ../infrastructure/maestro_config.yaml
