@@ -10,20 +10,23 @@ var express = require('express')
 
 
 PARAMS = {
-    'p_min': 1.0, // Minimum number of points exchangeable (if two players at same level compete)
-    'p_slope': 1.0, // Extra points exchanged per level difference
-    'p_wining_ratio_coef': 0.05, // Extra points given for each percentage point of ball win above 50%
-    'level_delta': 2.0, // Number of points required to reach level 2
-    'level_delta_increment': 1.0, // Increment of number of points to next level, added per level
-    'p_points_for_nomatch': 10 // TODO: THIS is random, was missing
+    'p_0': 10.0, // Point given if two players of same level compete
+    'p_slope': 3.0, // Extra points added/removed per level difference
+    'p_min': 5.0, // Minimum number of points a winner get (by winning vs. a n00b)
+    'max_nomatch_multiplier': 0.2, // Max multiplier added. Defined at max ball diff (obtained when winning x to 0 - aka nomatch)
+    'level_delta': 20.0, // Number of points required to reach level 1
+    'level_delta_increment': 10.0, // Increment of number of points to next level, added per level
+    'loss_friction': 0.4 // Reduction coefficient applied to losses, in order to be nice. Can be seen as experience gain
 }
 
 
+function winner_compute_point_exchange(delta_level_winner, winning_ratio) {
+    ball_multiplier = 1 + (winning_ratio * PARAMS['max_nomatch_multiplier'])
 
-function compute_point_exchange(delta_levels, winning_ratio){
-    dp = Math.round(
-            PARAMS['p_min'] + PARAMS['p_slope'] * Math.abs(delta_levels) + PARAMS['p_points_for_nomatch'] * winning_ratio
-        )
+    // Lower bound on points that can be won (but no upper bound)
+    points_level_difference = Math.max( PARAMS['p_min'], PARAMS['p_0'] - PARAMS['p_slope'] * delta_level_winner )
+
+    dp = Math.round(points_level_difference * ball_multiplier)
     return dp;
 }
 
@@ -99,38 +102,36 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
 
           var levelA = compute_level(points[nameA])
           var levelB = compute_level(points[nameB])
-          var winning_ratio = Math.abs(req.body[nameA]-req.body[nameB]) / Math.max(req.body[nameA],req.body[nameB])
-          point_exchange = compute_point_exchange(levelA-levelB, winning_ratio)
-          console.log(
-            nameA + 
-            '(' + levelA + ') ' + 
-            req.body[nameA] + 
-            ' - ' + 
-            req.body[nameB] + 
-            ' ' + nameB + 
-            '(' + levelB + ') ' + 
-            ' -- Exchanged ' + 
-            point_exchange + 
-            ' points')
-          var result_coef = req.body[nameA]>req.body[nameB] ? 1:-1
+          var result_coef = req.body[nameA] > req.body[nameB] ? 1 : -1
+          var winning_ratio = Math.abs(req.body[nameA]-req.body[nameB]) / Math.max(req.body[nameA], req.body[nameB])
 
-          theoreticalScoreA = points[nameA] + result_coef * point_exchange
+          delta_level_winner = (levelA - levelB) * result_coef
+          point_exchange = winner_compute_point_exchange(delta_level_winner, winning_ratio)
+          console.log('New match: lvl ' + levelA + ' vs lvl ' + levelB + ': ' + req.body[nameA] + ' - ' + req.body[nameB])
+          console.log('Current player points: ' + points[nameA] + ' ' + points[nameB])
+          console.log('Winner wins: ' + point_exchange)
+
+          gainA = result_coef * point_exchange
+          if (result_coef == -1) { gainA = Math.round(gainA * (1 - PARAMS['loss_friction'])) } // Apply loss friction because A lost
+          theoreticalScoreA = points[nameA] + gainA
           if (theoreticalScoreA < 0) {
             points[nameA] = 0
-            gainA = result_coef * point_exchange - theoreticalScoreA
+            gainA = gainA - theoreticalScoreA
           } else {
             points[nameA] = theoreticalScoreA
-            gainA = result_coef * point_exchange
           }
+          console.log('GainA: ' + gainA)
 
-          theoreticalScoreB = points[nameB] - result_coef * point_exchange
+          gainB = result_coef * -1 * point_exchange
+          if (result_coef == 1) { gainB = Math.round(gainB * (1 - PARAMS['loss_friction'])) } // Apply loss friction because B lost
+          theoreticalScoreB = points[nameB] + gainB
           if (theoreticalScoreB < 0) {
             points[nameB] = 0
-            gainB = -result_coef * point_exchange - theoreticalScoreB
+            gainB = gainB - theoreticalScoreB
           } else {
             points[nameB] = theoreticalScoreB
-            gainB = -result_coef * point_exchange
           }
+          console.log('GainB: ' + gainB)
 
           // Push the new points to the db
           async.each([ nameA, nameB ],
