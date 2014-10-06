@@ -12,7 +12,7 @@ var express = require('express')
 PARAMS = {
     'p_0': 10.0, // Point given if two players of same level compete
     'p_slope': 3.0, // Extra points added/removed per level difference
-    'p_min': 5.0, // Minimum number of points a winner get (by winning vs. a n00b)
+    'p_min': 0.0, // Minimum number of points a winner get (by winning vs. a n00b)
     'max_nomatch_multiplier': 0.2, // Max multiplier added. Defined at max ball diff (obtained when winning x to 0 - aka nomatch)
     'level_delta': 20.0, // Number of points required to reach level 1
     'level_delta_increment': 10.0, // Increment of number of points to next level, added per level
