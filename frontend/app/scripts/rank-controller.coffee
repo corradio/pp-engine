@@ -29,7 +29,7 @@ app.controller('RankCtrl', ($scope, Pagination, $modal, $http) ->
                     up = $scope.points_to_level(player.level + 1)
                     down = $scope.points_to_level(player.level)
                     now = player.points
-                    player.level_ratio = now / (up - now)
+                    player.level_ratio = (now - down) / (up - down)
                 )
             )
 )
