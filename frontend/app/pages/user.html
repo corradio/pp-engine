@@ -3,10 +3,10 @@
 <div class="path-container">
 
   <div ng-repeat="game in games | orderBy:'date':true" class="row path-item">
-    <div class="large-7 columns {{$index % 2 == 0 ? 'push-5' : ''}}">
-		<div class="circle circle-{{$index % 2 == 0 ? 'left' : 'right'}} {{$index % 2 == 0 ? 'left' : 'right'}}"></div>
+    <div class="large-7 columns {{won(game) ? 'push-5' : ''}}">
+		<div class="circle circle-{{won(game) ? 'left' : 'right'}} {{won(game) ? 'left' : 'right'}}"></div>
 	</div>
-	<div class="large-5 columns path-text {{$index % 2 == 0 ? 'left' : 'right'}} {{$index % 2 == 0 ? 'pull-6' : ''}}">
+	<div class="large-5 columns path-text {{won(game) ? 'left' : 'right'}} {{won(game) ? 'pull-6' : ''}}">
       <h4>
       	{{won(game) ? 'Won' : 'Lost'}} against {{ opponent(game) }} {{userScore(game)}}-{{opponentScore(game)}}
       </h4>

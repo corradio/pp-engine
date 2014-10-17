@@ -29,7 +29,13 @@
         <tr ng-repeat="player in (results = players | filter:search) | orderBy:'level':order | startFrom: pagination.page * pagination.perPage | limitTo: pagination.perPage">
           <td><a href="#/user/{{player.name}}">{{ player.name }}</a></td>
           <td>{{ player.company }}</td>
-          <td>{{ player.level }}</td>
+          <td>
+            <div class="gauge_ext" style="background-color: lightgray; width: 200px; height: 25px">
+              <div class="gauge_inner" style="position: absolute; background-color: lightblue; height: 25px; width: {{ player.level_ratio * 200 | number: 0 }}px">
+              </div>
+              <div style="position: absolute; margin-left: 5px; margin-top: 3px">Level {{ player.level }} - {{ player.points }} points</span>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>

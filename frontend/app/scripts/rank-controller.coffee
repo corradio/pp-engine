@@ -1,7 +1,20 @@
 # Controllers
+app = require('./app')
 
-angular.module('ppApp.controllers.rank', [])
-    .controller('RankCtrl', ['$scope', 'Pagination', '$modal', '$http', ($scope, Pagination, $modal, $http) ->
+app.controller('RankCtrl', ($scope, Pagination, $modal, $http) ->
+
+        $scope.points_to_level = (level) ->
+            PARAMS = 
+                level_delta: 20.0
+                level_delta_increment: 10.0
+            PARAMS.level_delta * level + (level - 1.0) * level * 0.5 * PARAMS.level_delta_increment
+
+        $scope.open = () ->
+            modalInstance = $modal.open({
+                templateUrl: 'myModalContent.html',
+                controller: ModalInstanceCtrl
+            })
+
         $http.get('api/users')
             .then((e) ->
                 $scope.players = if e.status == 200 then e.data else []
@@ -12,14 +25,14 @@ angular.module('ppApp.controllers.rank', [])
                     $scope.pagination.toPageId(0)
                 $scope.updateFilter()
 
-                $scope.open = () ->
-                    modalInstance = $modal.open({
-                        templateUrl: 'myModalContent.html',
-                        controller: ModalInstanceCtrl
-                    })
-
+                $scope.players.forEach( (player) -> 
+                    up = $scope.points_to_level(player.level + 1)
+                    down = $scope.points_to_level(player.level)
+                    now = player.points
+                    player.level_ratio = now / (up - now)
+                )
             )
-    ])
+)
 
 ModalInstanceCtrl = ($scope, $modalInstance, $http) ->
 
