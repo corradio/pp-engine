@@ -9,29 +9,33 @@ app.controller('RankCtrl', ($scope, Pagination, $modal, $http) ->
                 level_delta_increment: 10.0
             PARAMS.level_delta * level + (level - 1.0) * level * 0.5 * PARAMS.level_delta_increment
 
+        $scope.load = () ->
+            $http.get('api/users')
+                .then((e) ->
+                    $scope.players = if e.status == 200 then e.data else []
+                    $scope.search = {}
+                    $scope.pagination = Pagination.getNew(10)
+                    $scope.updateFilter = () ->
+                        $scope.pagination.numPages = Math.ceil($scope.players.length/$scope.pagination.perPage)
+                        $scope.pagination.toPageId(0)
+                    $scope.updateFilter()
+
+                    $scope.players.forEach( (player) -> 
+                        up = $scope.points_to_level(player.level + 1)
+                        down = $scope.points_to_level(player.level)
+                        now = player.points
+                        player.level_ratio = (now - down) / (up - down)
+                    )
+                )
+
         $scope.open = () ->
             modalInstance = $modal.open({
                 templateUrl: 'myModalContent.html',
                 controller: ModalInstanceCtrl
             })
+            modalInstance.result.then(() -> $scope.load)
 
-        $http.get('api/users')
-            .then((e) ->
-                $scope.players = if e.status == 200 then e.data else []
-                $scope.search = {}
-                $scope.pagination = Pagination.getNew(4)
-                $scope.updateFilter = () ->
-                    $scope.pagination.numPages = Math.ceil($scope.players.length/$scope.pagination.perPage)
-                    $scope.pagination.toPageId(0)
-                $scope.updateFilter()
-
-                $scope.players.forEach( (player) -> 
-                    up = $scope.points_to_level(player.level + 1)
-                    down = $scope.points_to_level(player.level)
-                    now = player.points
-                    player.level_ratio = (now - down) / (up - down)
-                )
-            )
+        $scope.load()
 )
 
 ModalInstanceCtrl = ($scope, $modalInstance, $http) ->
