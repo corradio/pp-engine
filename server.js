@@ -45,6 +45,70 @@ function compute_points_to_next_level(level){
     return PARAMS['level_delta'] * level + (level - 1.0) * level * 0.5 * PARAMS['level_delta_increment']
 }
 
+function indexOfPlayerByName(name, players) {
+  for (var i = 0; i < players.length; i++) {
+    if (name == players[i].name) return i
+  }
+  return -1
+}
+
+// Take (game, players) and produces updated (game, players)
+function processGame(game, players) {
+
+  var ixA = indexOfPlayerByName(game.players[0].name, players)
+  var ixB = indexOfPlayerByName(game.players[1].name, players)
+
+  var levelA = players[ixA].level
+  var levelB = players[ixB].level
+
+  var pointsA = players[ixA].points
+  var pointsB = players[ixB].points
+
+  var scoreA = game.players[0].score
+  var scoreB = game.players[1].score
+
+  var result_coef = scoreA > scoreB ? 1 : -1
+  var winning_ratio = Math.abs(scoreA - scoreB) / Math.max(scoreA, scoreB)
+
+  delta_level_winner = (levelA - levelB) * result_coef
+  point_exchange = winner_compute_point_exchange(delta_level_winner, winning_ratio)
+  console.log('New match: lvl ' + levelA + ' vs lvl ' + levelB + ': ' + scoreA + ' - ' + scoreB)
+  console.log('Current player points: ' + pointsA + ' ' + pointsB)
+  console.log('Winner wins: ' + point_exchange)
+
+  gainA = result_coef * point_exchange
+  if (result_coef == -1) { gainA = Math.round(gainA * (1 - PARAMS['loss_friction'])) } // Apply loss friction because A lost
+  theoreticalScoreA = pointsA + gainA
+  if (theoreticalScoreA < 0) {
+    pointsA = 0
+    gainA = gainA - theoreticalScoreA
+  } else {
+    pointsA = theoreticalScoreA
+  }
+  console.log('GainA: ' + gainA)
+
+  gainB = result_coef * -1 * point_exchange
+  if (result_coef == 1) { gainB = Math.round(gainB * (1 - PARAMS['loss_friction'])) } // Apply loss friction because B lost
+  theoreticalScoreB = pointsB + gainB
+  if (theoreticalScoreB < 0) {
+    pointsB = 0
+    gainB = gainB - theoreticalScoreB
+  } else {
+    pointsB = theoreticalScoreB
+  }
+  console.log('GainB: ' + gainB)
+
+  // Update
+  game.players[0].gain = gainA
+  game.players[1].gain = gainB
+  players[ixA].points = pointsA
+  players[ixB].points = pointsB
+  players[ixA].level = compute_level(pointsA)
+  players[ixB].level = compute_level(pointsB)
+
+  return { game: game, players: players }
+}
+
 
 var app = express()
 app.use(express.static(__dirname + '/frontend/dist/'))
@@ -66,8 +130,8 @@ app.use(express.static(path.join(__dirname, "frontend/dist")));
 MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
 
   if(err) throw err;
-  players = db.collection('players');
-  games = db.collection('games');
+  playersCollection = db.collection('players');
+  gamesCollection = db.collection('games');
 
   app.post('/api/games',function(req, res){
 
@@ -75,103 +139,74 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
       res.status(400).send('Body should be in the format { playerA: scoreA, playerB: scoreB}')
     } else {
 
-      game_uuid = uuid.v1();
-
       nameA = Object.keys(req.body)[0];
       nameB = Object.keys(req.body)[1];
 
       // Check if these players are in the database
-      points = {}
+      // and add them if required
+      players = []
       async.each([ nameA, nameB ],
-        function(name,cb){
-          players.find({ "name": name }).toArray(function(err, results) {
-            if(results.length==0){
-              players.insert({ "name": name, "points": 0}, function(err){
-                if(err) return cb(err)
-                points[name] = 0
-                cb()
-              })
-            } else{
-              points[name] = results[0]['points']
-              cb()
-            }
-          })
-        },function(err){
 
+        // Iterator
+        function (name, cb) {
+          playersCollection.find({ "name": name }).toArray( function(err, results) {
+            if(err) return cb(err)
+            if (results.length == 0) {
+              playersCollection.insert({ "name": name, "points": 0, "level": 0 }, function(err) {if (err) cb(err)})
+              players.push({ "name": name, "points": 0, "level": 0 })
+            }
+            cb()
+          })
+        },
+
+        // Callback
+        function(err){
           if(err) res.send(err)
 
-          var levelA = compute_level(points[nameA])
-          var levelB = compute_level(points[nameB])
-          var result_coef = req.body[nameA] > req.body[nameB] ? 1 : -1
-          var winning_ratio = Math.abs(req.body[nameA]-req.body[nameB]) / Math.max(req.body[nameA], req.body[nameB])
-
-          delta_level_winner = (levelA - levelB) * result_coef
-          point_exchange = winner_compute_point_exchange(delta_level_winner, winning_ratio)
-          console.log('New match: lvl ' + levelA + ' vs lvl ' + levelB + ': ' + req.body[nameA] + ' - ' + req.body[nameB])
-          console.log('Current player points: ' + points[nameA] + ' ' + points[nameB])
-          console.log('Winner wins: ' + point_exchange)
-
-          gainA = result_coef * point_exchange
-          if (result_coef == -1) { gainA = Math.round(gainA * (1 - PARAMS['loss_friction'])) } // Apply loss friction because A lost
-          theoreticalScoreA = points[nameA] + gainA
-          if (theoreticalScoreA < 0) {
-            points[nameA] = 0
-            gainA = gainA - theoreticalScoreA
-          } else {
-            points[nameA] = theoreticalScoreA
+          game = {
+            uuid: uuid.v1(),
+            date: new Date().toISOString(),
+            players: [
+              {
+                name: nameA,
+                score: req.body[nameA],
+                // gain: gainA
+              },
+              {
+                name: nameB,
+                score: req.body[nameB],
+                // gain: gainB
+              }
+            ]
           }
-          console.log('GainA: ' + gainA)
 
-          gainB = result_coef * -1 * point_exchange
-          if (result_coef == 1) { gainB = Math.round(gainB * (1 - PARAMS['loss_friction'])) } // Apply loss friction because B lost
-          theoreticalScoreB = points[nameB] + gainB
-          if (theoreticalScoreB < 0) {
-            points[nameB] = 0
-            gainB = gainB - theoreticalScoreB
-          } else {
-            points[nameB] = theoreticalScoreB
-          }
-          console.log('GainB: ' + gainB)
-
-          // Push the new points to the db
+          result = processGame(game, players)
+          game = result.game
+          players = result.players
+          
+          // Push the new points in the db
           async.each([ nameA, nameB ],
             function(name,cb){
-              players.findAndModify({ "name": name }
+              ix = indexOfPlayerByName(name, players)
+              playersCollection.findAndModify({ "name": name }
                 ,[]
-                ,{$set: {points: points[name], level: compute_level(points[name]) }}
+                ,{$set: {points: players[ix].points, level: players[ix].level }}
                 ,{}
                 , function(err, object) {
                   if(err) return cb(err)
                   if (process.env['ENV'] == 'PROD') {
-                    statsdClient.gauge('pp-engine.' + name + '.points', points[name]);
-                    statsdClient.gauge('pp-engine.' + name + '.level', compute_level(points[name]));
+                    statsdClient.gauge('pp-engine.' + name + '.points', players[ix].points);
+                    statsdClient.gauge('pp-engine.' + name + '.level', players[ix].level);
                   }
                   cb()
                 }
               )
             },
-            function(err){
+            function(err) {
               if(err) res.send(err)
-              games.insert({
-                uuid: game_uuid,
-                date: new Date().toISOString(),
-                players: [
-                  {
-                    name: nameA,
-                    score: req.body[nameA],
-                    gain: gainA
-                  },
-                  {
-                    name: nameB,
-                    score: req.body[nameB],
-                    gain: gainB
-                  }
-                ]
-              }, function(err){
+              gamesCollection.insert(game, function(err, result) {
                 if(err) res.send(err)
-                players.find().toArray(function(err, results) {
-                  res.status(200).send('Thanks for playing!')
-                })
+                res.status(200).send('Thanks for playing!')
               })
             }
           )
@@ -181,10 +216,49 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
   });
 
   app.get('/api/users', function(req, res) {
-    players.find()
-    .toArray(function(err, results) {
-      res.status(200).send(results)
+    playersCollection.find()
+      .toArray(function(err, results) {
+        res.status(200).send(results)
+      })
+  });
+
+  app.get('/api/replay', function(req, res) {
+    doCommit = req.query.commit !== undefined
+
+    players = [];
+    games = [];
+
+    // Get all games
+    gamesCollection.find({}, {'sort': 'date'}).toArray(function(err, results) {
+      if(err) res.send(err)
+      // Process
+      results.forEach( function(game, gameIndex) {
+        // Create player if needed
+        game.players.forEach( function(player) {
+          if (indexOfPlayerByName(player.name, players) == -1) { 
+            players.push({ name: player.name, points: 0, level: 0 }) 
+          }
+        })
+
+        result = processGame(game, players)
+        players = result.players
+        games.push(result.game)
+      })
+      if (!doCommit) {
+        res.status(200).send({ 'players': players, 'games': games })
+      } else {
+        gamesCollection.drop(function(err, reply) {
+          if (err) res.send(err)
+          gamesCollection.insert(games, function(err, result) {});
+        })
+        playersCollection.drop(function(err, reply) {
+          if (err) res.send(err)
+          playersCollection.insert(players, function(err, result) {});
+        })
+        res.status(200).send("Done!")
+      }
     })
+
   });
 
   // fetching user data
@@ -194,7 +268,7 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
       // call to '/api/users/:userid/games
       if(pars.slice(pars.indexOf('/')+1)=='games'){
         user = pars.slice(0,pars.indexOf('/'));
-        games.find(
+        gamesCollection.find(
           {
             players: {
               $elemMatch: {
@@ -211,7 +285,7 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
     } else {
       // call to '/api/users/:userid
       user = pars;
-      players.find({'name': user}).toArray(function(err, results) {
+      playersCollection.find({'name': user}).toArray(function(err, results) {
         if(results.length==0){
           res.status(400).send('user not found')
         } else {

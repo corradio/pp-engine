@@ -4,9 +4,12 @@ REGISTRY=registry.corp.snips.net:5000
 DOCKER_SERVER=dev3.corp.snips.net:4243
 DOCKER=docker -H $(DOCKER_SERVER)
 
-ENV=-e MONGODB_HOST=dev2.corp.snips.net
+ENV=-e MONGODB_HOST=dev3.corp.snips.net
 
 .PHONY: build push run shell
+
+server:
+	export MONGODB_HOST=dev3.corp.snips.net && node server
 
 build:
 	cd frontend && gulp build
