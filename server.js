@@ -154,6 +154,8 @@ MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
             if (results.length == 0) {
               playersCollection.insert({ "name": name, "points": 0, "level": 0 }, function(err) {if (err) cb(err)})
               players.push({ "name": name, "points": 0, "level": 0 })
+            } else {
+              players.push(results[0])
             }
             cb()
           })
