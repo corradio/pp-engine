@@ -1,4 +1,5 @@
-<h1 class="text-center"><i class="fi-torso large"></i> {{ user.name }} <small>level {{ user.level }} <small>({{ user.points }} points)</small></small></h1>
+<h2 class="text-center"><i class="fi-torso large"></i> {{ user.name }} <small>level {{ user.level }} <small>({{ user.points }} points)</small></small></h2>
+<h5 class="text-center">Stats: {{ wins.length }}/{{ losses.length + wins.length }} ({{ wins.length/(wins.length + losses.length)*100 | number: 0}}%)<br><h5>
 
 <div class="path-container">
 
@@ -7,9 +8,9 @@
 		<div class="circle circle-{{won(game) ? 'left' : 'right'}} {{won(game) ? 'left' : 'right'}}"></div>
 	</div>
 	<div class="large-5 columns path-text {{won(game) ? 'left' : 'right'}} {{won(game) ? 'pull-6' : ''}}">
-      <h4>
+      <h5>
       	{{won(game) ? 'Won' : 'Lost'}} against {{ opponent(game) }} {{userScore(game)}}-{{opponentScore(game)}}
-      </h4>
+      </h5>
       <p>
       	<span class="label {{won(game) ? 'success' : 'alert'}}">
       		<i class="fi-arrow-{{won(game) ? 'up' : 'down'}} large"></i> {{displayGain(game)}}
