@@ -7,7 +7,7 @@
       <input type="text" id="filtered" placeholder="e.g. Rand Hindi" ng-model="search.name" ng-change="updateFilter()" />
     </div>
     <div class="large-2 columns">
-      <a href="#" class="button postfix" ng-click="open()">Add Match</a>
+      <a href="" class="button postfix" ng-click="open()">Add Match</a>
     </div>
   </div>
 </form>
@@ -63,10 +63,14 @@
     <div class="small-5 columns">
       <div class="row">
         <div class="small-3 columns">
-          <label for="player1-name" class="right inline">Player 1</label>
+          <label for="player1-name" class="right inline">Player&nbsp;1</label>
         </div>
         <div class="small-9 columns">
-          <input type="text" id="player1-name" placeholder="" ng-model="player1.name">
+          <select ng-model="player1">
+            <option ng-repeat="player in $parent.snips_users | orderBy: 'nickname'" value="{{ player.email }}">
+              {{ player.nickname }}
+            </option>
+          </select>
         </div>
       </div>
       <div class="row">
@@ -74,22 +78,26 @@
           <label for="score1-value" class="right inline">Score</label>
         </div>
         <div class="small-9 columns">
-          <input type="text" id="score1-value" placeholder="" ng-model="player1.score">
+          <input type="text" id="score1-value" placeholder="" ng-model="score1">
         </div>
       </div>
     </div>
     <div class="small-5 small-offset-2 columns">
       <div class="row">
         <div class="small-9 columns">
-          <input type="text" id="player2-name" placeholder="" ng-model="player2.name">
+          <select ng-model="player2">
+            <option ng-repeat="player in $parent.snips_users | orderBy: 'nickname'" value="{{ player.email }}">
+              {{ player.nickname }}
+            </option>
+          </select>
         </div>
         <div class="small-3 columns">
-          <label for="player2-name" class="left inline">Player 2</label>
+          <label for="player2-name" class="left inline">Player&nbsp;2</label>
         </div>
       </div>
       <div class="row">
         <div class="small-9 columns">
-          <input type="text" id="score2-value" placeholder="" ng-model="player2.score">
+          <input type="text" id="score2-value" placeholder="" ng-model="score2">
         </div>
         <div class="small-3 columns">
           <label for="score2-value" class="left inline">Score</label>
@@ -99,7 +107,7 @@
   </div>
   <div class="row collapse">
     <div class="small-4 small-offset-4 columns">
-      <a href="#" class="button small expand" ng-click="ok()">Done</a>
+      <a href="" class="button small expand" ng-click="ok()">Done</a>
     </div>
   </div>
   <a class="close-reveal-modal" ng-click="cancel()">&#215;</a>

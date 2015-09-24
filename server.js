@@ -121,11 +121,22 @@ var port = 3000
 
 
 var MONGODB = process.env['MONGODB_HOST']
+var PRIVATE_MONGODB = process.env['PRIVATE_MONGODB_HOST']
 var statsdClient = new statsd.StatsD()
 statsdClient.post = 8125
 statsdClient.host = process.env['STATSD_HOST']
 
 app.use(express.static(path.join(__dirname, "frontend/dist")));
+
+MongoClient.connect('mongodb://'+PRIVATE_MONGODB+'/private_snips_net', function(err, db) {
+  if(err) throw err;
+  app.get('/api/snips_users', function(req, res) {
+    db.collection('user').find()
+      .toArray(function(err, results) {
+        res.status(200).send(results)
+      })
+  });
+});
 
 MongoClient.connect('mongodb://'+MONGODB+'/pp-engine', function(err, db) {
 

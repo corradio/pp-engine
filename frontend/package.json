@@ -16,6 +16,7 @@
     "gulp-concat": "~2.1.7",
     "gulp-util": "~2.2.10",
     "gulp-autoprefixer": "0.0.7",
-    "gulp-browserify": "~0.2.7"
+    "gulp-browserify": "~0.2.7",
+    "express": "*"
   }
 }

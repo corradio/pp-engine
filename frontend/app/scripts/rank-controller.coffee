@@ -3,56 +3,58 @@ app = require('./app')
 
 app.controller('RankCtrl', ($scope, Pagination, $modal, $http) ->
 
-        $scope.points_to_level = (level) ->
-            PARAMS = 
-                level_delta: 20.0
-                level_delta_increment: 10.0
-            PARAMS.level_delta * level + (level - 1.0) * level * 0.5 * PARAMS.level_delta_increment
+    $scope.points_to_level = (level) ->
+        PARAMS = 
+            level_delta: 20.0
+            level_delta_increment: 10.0
+        PARAMS.level_delta * level + (level - 1.0) * level * 0.5 * PARAMS.level_delta_increment
 
-        $scope.load = () ->
-            $http.get('api/users')
-                .then((e) ->
-                    $scope.players = if e.status == 200 then e.data else []
-                    $scope.search = {}
-                    $scope.pagination = Pagination.getNew(10)
-                    $scope.updateFilter = () ->
-                        $scope.pagination.numPages = Math.ceil($scope.players.length/$scope.pagination.perPage)
-                        $scope.pagination.toPageId(0)
-                    $scope.updateFilter()
+    $scope.load = () ->
+        $http.get('api/users')
+            .then((e) ->
+                $scope.players = if e.status == 200 then e.data else []
+                $scope.search = {}
+                $scope.pagination = Pagination.getNew(10)
+                $scope.updateFilter = () ->
+                    $scope.pagination.numPages = Math.ceil($scope.players.length/$scope.pagination.perPage)
+                    $scope.pagination.toPageId(0)
+                $scope.updateFilter()
 
-                    $scope.players.forEach( (player) -> 
-                        up = $scope.points_to_level(player.level + 1)
-                        down = $scope.points_to_level(player.level)
-                        now = player.points
-                        player.level_ratio = (now - down) / (up - down)
-                    )
+                $scope.players.forEach( (player) -> 
+                    up = $scope.points_to_level(player.level + 1)
+                    down = $scope.points_to_level(player.level)
+                    now = player.points
+                    player.level_ratio = (now - down) / (up - down)
                 )
+            )
 
-        $scope.open = () ->
-            modalInstance = $modal.open({
-                templateUrl: 'myModalContent.html',
-                controller: ModalInstanceCtrl
-            })
-            modalInstance.result.then(() -> $scope.load)
+    $scope.open = () ->
+        modalInstance = $modal.open({
+            templateUrl: 'myModalContent.html',
+            controller: ModalInstanceCtrl
+        })
+        modalInstance.result.then(() -> $scope.load)
 
-        $scope.load()
+    $scope.load()
 )
 
 ModalInstanceCtrl = ($scope, $modalInstance, $http) ->
-
-    $scope.player1 = {name : "", score: 0}
-    $scope.player2 = {name : "", score: 0}
+    $http.get('api/snips_users')
+        .then((e) ->
+            $scope.snips_users = if e.status == 200 then e.data else []
+        )
 
     $scope.ok = () ->
-        data = {}
-        data[$scope.player1.name] = parseInt($scope.player1.score)
-        data[$scope.player2.name] = parseInt($scope.player2.score)
-        console.log(data)
+        if $scope.player1? and $scope.player2? and $scope.score1? and $scope.score2?
+            data = {}
+            data[$scope.player1] = parseInt($scope.score1)
+            data[$scope.player2] = parseInt($scope.score2)
+            console.log(data)
 
-        $http.post('api/games', data)
-            .success(
-                $modalInstance.close()
-            )
+            $http.post('api/games', data)
+                .success(
+                    $modalInstance.close()
+                )
 
     $scope.cancel = () ->
         $modalInstance.dismiss('cancel')

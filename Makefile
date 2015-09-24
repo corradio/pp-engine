@@ -8,8 +8,12 @@ ENV=-e MONGODB_HOST=dev3.corp.snips.net
 
 .PHONY: build push run shell
 
+install:
+	npm install
+	cd frontend && npm install && bower install
+
 server:
-	export MONGODB_HOST=dev3.corp.snips.net && node server
+	MONGODB_HOST=dev3.corp.snips.net PRIVATE_MONGODB_HOST=prod2.corp.snips.net node server
 
 build:
 	cd frontend && gulp build
