@@ -18,7 +18,6 @@
       <thead>
         <tr>
           <th>Name</th>
-          <th>Company</th>
           <th>
             <a href="" ng-click="order=!order; currentPage=0" ng-init="order=true">Level</a>
             <i ng-class="(order) ? 'fa-caret-up' : 'fa-caret-down'" class="fa right inline"></i>
@@ -27,8 +26,7 @@
       </thead>
       <tbody>
         <tr ng-repeat="player in (results = players | filter:search) | orderBy:'points':order | startFrom: pagination.page * pagination.perPage | limitTo: pagination.perPage">
-          <td><a href="#/user/{{player.name}}">{{ player.name }}</a></td>
-          <td>{{ player.company }}</td>
+          <td><a href="#/user/{{ encodeURI(player.email) }}">{{ player.name }}</a></td>
           <td>
             <div class="gauge_ext" style="background-color: lightgray; width: 200px; height: 25px">
               <div class="gauge_inner" style="position: absolute; background-color: lightblue; height: 25px; width: {{ player.level_ratio * 200 | number: 0 }}px">
@@ -66,7 +64,7 @@
           <label for="player1-name" class="right inline">Player&nbsp;1</label>
         </div>
         <div class="small-9 columns">
-          <select ng-model="player1">
+          <select ng-model="$parent.player1">
             <option ng-repeat="player in $parent.snips_users | orderBy: 'nickname'" value="{{ player.email }}">
               {{ player.nickname }}
             </option>
@@ -78,14 +76,14 @@
           <label for="score1-value" class="right inline">Score</label>
         </div>
         <div class="small-9 columns">
-          <input type="text" id="score1-value" placeholder="" ng-model="score1">
+          <input type="text" id="score1-value" placeholder="" ng-model="$parent.score1">
         </div>
       </div>
     </div>
     <div class="small-5 small-offset-2 columns">
       <div class="row">
         <div class="small-9 columns">
-          <select ng-model="player2">
+          <select ng-model="$parent.player2">
             <option ng-repeat="player in $parent.snips_users | orderBy: 'nickname'" value="{{ player.email }}">
               {{ player.nickname }}
             </option>
@@ -97,7 +95,7 @@
       </div>
       <div class="row">
         <div class="small-9 columns">
-          <input type="text" id="score2-value" placeholder="" ng-model="score2">
+          <input type="text" id="score2-value" placeholder="" ng-model="$parent.score2">
         </div>
         <div class="small-3 columns">
           <label for="score2-value" class="left inline">Score</label>

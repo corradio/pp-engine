@@ -4,16 +4,16 @@
 <div class="path-container">
 
   <div ng-repeat="game in games | orderBy:'date':true" class="row path-item">
-    <div class="large-7 columns {{won(game) ? 'push-5' : ''}}">
-		<div class="circle circle-{{won(game) ? 'left' : 'right'}} {{won(game) ? 'left' : 'right'}}"></div>
+    <div class="large-7 columns {{game.won ? 'push-5' : ''}}">
+		<div class="circle circle-{{game.won ? 'left' : 'right'}} {{game.won ? 'left' : 'right'}}"></div>
 	</div>
-	<div class="large-5 columns path-text {{won(game) ? 'left' : 'right'}} {{won(game) ? 'pull-6' : ''}}">
+	<div class="large-5 columns path-text {{game.won ? 'left' : 'right'}} {{game.won ? 'pull-6' : ''}}">
       <h5>
-      	{{won(game) ? 'Won' : 'Lost'}} against {{ opponent(game) }} {{userScore(game)}}-{{opponentScore(game)}}
+      	{{game.won ? 'Won' : 'Lost'}} against {{ game.opponent }} {{game.userScore}}-{{game.opponentScore}}
       </h5>
       <p>
-      	<span class="label {{won(game) ? 'success' : 'alert'}}">
-      		<i class="fi-arrow-{{won(game) ? 'up' : 'down'}} large"></i> {{displayGain(game)}}
+      	<span class="label {{game.won ? 'success' : 'alert'}}">
+      		<i class="fi-arrow-{{game.won ? 'up' : 'down'}} large"></i> {{game.displayGain}}
       	</span>  
       	{{ fromDate(game.date) }}
       </p>
