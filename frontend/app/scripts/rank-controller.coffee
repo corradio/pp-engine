@@ -45,7 +45,7 @@ app.controller('RankCtrl', ($scope, Pagination, $modal, $http) ->
             templateUrl: 'myModalContent.html',
             controller: ModalInstanceCtrl
         })
-        modalInstance.result.then(() -> $scope.load)
+        modalInstance.result.then(() -> $scope.load())
 
     $scope.load()
 )
@@ -61,7 +61,6 @@ ModalInstanceCtrl = ($scope, $modalInstance, $http) ->
             data = {}
             data[$scope.player1] = parseInt($scope.score1)
             data[$scope.player2] = parseInt($scope.score2)
-            console.log(data)
 
             $http.post('api/games', data)
                 .success( () ->

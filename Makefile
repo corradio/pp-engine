@@ -31,26 +31,9 @@ shell:
 		-v /home/shared/pois/:/opt/data \
 		-i "$(REGISTRY)/$(TAG):$(VERSION)" sh
 
-## MAESTRO
-MAESTRO=python -u -m maestro -f ../infrastructure/maestro_config.yaml
-
 .PHONY: deploy logs follow status stop start
 
-deploy: stop start
-
-logs:
-	$(MAESTRO) logs $(TAG)
-
-follow:
-	$(MAESTRO) logs -F $(TAG)
-
-status:
-	$(MAESTRO) status $(TAG)
-
-stop:
-	$(MAESTRO) stop $(TAG)
-
-start:
-	$(MAESTRO) start -r $(TAG)
+deploy: 
+	sky service restart $(TAG)
 
 publish: build push deploy
